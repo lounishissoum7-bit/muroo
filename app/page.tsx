@@ -6,10 +6,10 @@ import { motion } from 'framer-motion'
 import { useCartTotal } from '@/lib/store'
 
 const FEATURES = [
-  { icon: '📐', title: 'Mesure AR',     desc: 'Murs, portes, fenêtres\nen 2 taps' },
-  { icon: '🛋️', title: 'Simulation 3D', desc: 'Placez vos meubles\navant d'acheter' },
-  { icon: '🧱', title: 'Boutique',      desc: 'Catalogue complet\nprix en DA' },
-  { icon: '📄', title: 'Devis PDF',     desc: 'WhatsApp en\n1 clic' },
+  { icon: '📐', title: 'Mesure AR',     desc: 'Murs, portes, fenêtres en 2 taps' },
+  { icon: '🛋️', title: 'Simulation 3D', desc: 'Placez vos meubles avant achat' },
+  { icon: '🧱', title: 'Boutique',      desc: 'Catalogue complet, prix en DA' },
+  { icon: '📄', title: 'Devis PDF',     desc: 'WhatsApp en 1 clic' },
 ]
 
 export default function HomePage() {
@@ -120,7 +120,7 @@ export default function HomePage() {
                 {f.icon}
               </div>
               <div className="text-[12px] font-bold text-muro-text mb-0.5">{f.title}</div>
-              <div className="text-[10px] text-muro-text4 leading-snug whitespace-pre-line">{f.desc}</div>
+              <div className="text-[10px] text-muro-text4 leading-snug">{f.desc}</div>
             </motion.div>
           ))}
         </motion.div>
