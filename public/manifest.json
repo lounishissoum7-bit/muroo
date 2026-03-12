@@ -1,0 +1,56 @@
+{
+  "name": "MURO by L&Y — Décoration Intérieure AR",
+  "short_name": "MURO",
+  "description": "Simulateur AR de décoration intérieure. Mesurez, visualisez, commandez. MURO by L&Y · Oran, Algérie.",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#0D0B08",
+  "theme_color": "#0D0B08",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["lifestyle", "shopping", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Accueil MURO"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Simulation AR",
+      "short_name": "AR",
+      "description": "Lancer la simulation AR",
+      "url": "/simulation",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Boutique",
+      "short_name": "Boutique",
+      "description": "Parcourir le catalogue",
+      "url": "/boutique",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
