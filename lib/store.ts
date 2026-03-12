@@ -28,7 +28,7 @@ export interface Room {
   createdAt:   number
 }
 
-export type ProductCategory = 'tv' | 'murs' | 'lumiere' | 'mobilier' | 'services'
+export type ProductCategory = 'tv' | 'tv-simple' | 'tv-deco' | 'murs' | 'lumiere' | 'mobilier' | 'services'
 
 export interface Product {
   id:          string

@@ -1,13 +1,123 @@
 // Fichier : lib/products.ts
 import type { Product } from './store'
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // CATALOGUE PRODUITS MURO by L&Y — Oran, Algérie
 // Prix en DZD (Dinars Algériens) · 2026
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 export const PRODUCTS: Product[] = [
 
-  // ── MEUBLES TV ───────────────────────────────────────
+  // ────────────────────────────────────────────────────────────────
+  // 📺 SECTION 1 — MEUBLES TV SIMPLES (sur mesure, sans placo)
+  // ────────────────────────────────────────────────────────────────
+
+  {
+    id:          'tv-simple-bois-noir',
+    name:        'Meuble TV Bois & Noir Mat',
+    nameAr:      'طاولة تلفزيون خشب وأسود مطفأ',
+    category:    'tv-simple',
+    emoji:       '📺',
+    priceDA:     55_000,
+    priceUnit:   'unité',
+    dimensions:  '200 × 45 × 50 cm · sur mesure possible',
+    description: 'Composition murale moderne bois naturel et noir mat. Colonnes latérales avec niches ouvertes et éclairage LED intégré. Fabrication sur mesure Oran.',
+    image:       '/images/tv/meuble-tv-moderne-bois-noir.jpg',
+    model3d:     '/models/tv-stand-180.glb',
+    inStock:     true,
+  },
+  {
+    id:          'tv-simple-flottant-chene',
+    name:        'Meuble TV Flottant Chêne Vieilli',
+    nameAr:      'طاولة تلفزيون عائمة بلوط قديم',
+    category:    'tv-simple',
+    emoji:       '🪵',
+    priceDA:     48_000,
+    priceUnit:   'unité',
+    dimensions:  '180 × 30 × 25 cm · L personnalisable',
+    description: 'Meuble TV suspendu contemporain finition chêne vieilli. Éclairage LED sous caisson. Portes à push-open. MDF hydrofuge, montage mural solide.',
+    image:       '/images/tv/meuble-tv-chene-vieilli-led.webp',
+    model3d:     '/models/tv-floating.glb',
+    inStock:     true,
+  },
+  {
+    id:          'tv-simple-flottant-beige',
+    name:        'Meuble TV Flottant Luxe Beige',
+    nameAr:      'طاولة تلفزيون فاخرة بيج عائمة',
+    category:    'tv-simple',
+    emoji:       '🏮',
+    priceDA:     72_000,
+    priceUnit:   'unité',
+    dimensions:  '250 × 35 × 30 cm · extensible à 300cm',
+    description: 'Meuble TV panoramique laqué beige satiné. Façade striée centrale dorée. Rangements à tiroirs silencieux Blum. Style minimaliste luxe, fabrication locale.',
+    image:       '/images/tv/meuble-tv-flottant-beige-luxe.webp',
+    model3d:     '/models/tv-floating.glb',
+    inStock:     true,
+  },
+  {
+    id:          'tv-simple-bibliotheque',
+    name:        'Bibliothèque TV Noir & Bois',
+    nameAr:      'مكتبة تلفزيون أسود وخشب',
+    category:    'tv-simple',
+    emoji:       '📚',
+    priceDA:     95_000,
+    priceUnit:   'unité',
+    dimensions:  '220 × 220 × 40 cm · hauteur plafond',
+    description: 'Composition bibliothèque mur entier noir mat avec tablettes bois massif. Lambris shiplap vertical intégré. LED indirect. Colonne rangement haute avec portes.',
+    image:       '/images/tv/meuble-tv-bibliotheque-noir-bois.jpg',
+    model3d:     '/models/bookcase.glb',
+    inStock:     true,
+  },
+
+  // ────────────────────────────────────────────────────────────────
+  // 🏛️ SECTION 2 — MEUBLES TV AVEC DÉCORATION PLACOPLATRE
+  // ────────────────────────────────────────────────────────────────
+
+  {
+    id:          'tv-deco-mural-anthracite',
+    name:        'Mur TV Anthracite + Shiplap LED',
+    nameAr:      'جدار تلفزيون أنثراسيت مع LED',
+    category:    'tv-deco',
+    emoji:       '🎬',
+    priceDA:     185_000,
+    priceUnit:   'forfait',
+    dimensions:  'Mur complet 300–400 cm · pose incluse',
+    description: 'Mur TV mural haut de gamme : parement BA13 anthracite, lambris shiplap bois vertical avec LED indirect doré, meuble bas laqué gris. Niches flottantes éclairées. Câbles TV encastrés. Pose complète incluse.',
+    image:       '/images/tv/meuble-tv-mural-anthracite-shiplap.jpg',
+    model3d:     '/models/tv-stand-180.glb',
+    inStock:     true,
+  },
+  {
+    id:          'tv-deco-placo-niches-led',
+    name:        'Mur TV Placo Niches & LED',
+    nameAr:      'جدار تلفزيون جبس مع أضواء LED',
+    category:    'tv-deco',
+    emoji:       '💡',
+    priceDA:     145_000,
+    priceUnit:   'forfait',
+    dimensions:  'Mur 280–350 cm · sur mesure',
+    description: 'Composition BA13 avec cadre TV encastré éclairé en LED chaud, niches latérales décoratives sur mesure, meuble flottant bois + blanc. Finition peinture satin incluse. Câblage TV propre.',
+    image:       '/images/tv/meuble-tv-placo-led-niches.jpg',
+    model3d:     '/models/tv-stand-120.glb',
+    inStock:     true,
+  },
+  {
+    id:          'tv-deco-marbre-bibliotheque',
+    name:        'Mur TV Marbre & Bibliothèque LED',
+    nameAr:      'جدار رخام مع مكتبة LED',
+    category:    'tv-deco',
+    emoji:       '🪨',
+    priceDA:     220_000,
+    priceUnit:   'forfait',
+    dimensions:  'Mur 350–450 cm · grande bibliothèque',
+    description: 'Composition prestige : panneau mural faux marbre blanc Carrare, bibliothèque sur mesure bois naturel avec éclairage LED à chaque tablette, meuble bas bois. Rendu 5 étoiles, fabrication et pose Oran.',
+    image:       '/images/tv/meuble-tv-marbre-bibliotheque.webp',
+    model3d:     '/models/bookcase.glb',
+    inStock:     true,
+  },
+
+  // ────────────────────────────────────────────────────────────────
+  // ANCIENS PRODUITS TV (conservés pour compatibilité)
+  // ────────────────────────────────────────────────────────────────
   {
     id:          'tv-led-120',
     name:        'Meuble TV LED 120cm',
@@ -61,7 +171,7 @@ export const PRODUCTS: Product[] = [
     inStock:     true,
   },
 
-  // ── REVÊTEMENTS MURAUX ───────────────────────────────
+  // ── REVÊTEMENTS MURAUX ───────────────────────────────────────────
   {
     id:          'faux-marbre-blanc',
     name:        'Faux Marbre Blanc Carrare',
@@ -114,7 +224,7 @@ export const PRODUCTS: Product[] = [
     inStock:     true,
   },
 
-  // ── ÉCLAIRAGE ────────────────────────────────────────
+  // ── ÉCLAIRAGE ────────────────────────────────────────────────────
   {
     id:          'led-rgb-3m',
     name:        'Ruban LED RGB 3m',
@@ -152,7 +262,7 @@ export const PRODUCTS: Product[] = [
     inStock:     true,
   },
 
-  // ── MOBILIER ─────────────────────────────────────────
+  // ── MOBILIER ─────────────────────────────────────────────────────
   {
     id:          'table-basse',
     name:        'Table Basse Moderne',
@@ -180,7 +290,7 @@ export const PRODUCTS: Product[] = [
     inStock:     true,
   },
 
-  // ── SERVICES ─────────────────────────────────────────
+  // ── SERVICES ─────────────────────────────────────────────────────
   {
     id:          'pose-mur',
     name:        'Pose Revêtement Mural',
@@ -189,7 +299,7 @@ export const PRODUCTS: Product[] = [
     emoji:       '🔧',
     priceDA:     800,
     priceUnit:   'm²',
-    dimensions:  'Main d\'œuvre incluse',
+    dimensions:  "Main d'œuvre incluse",
     description: 'Pose de tout revêtement mural (marbre, shiplap, BA13, panneau 3D). Déplacement Oran inclus.',
     inStock:     true,
   },
@@ -207,7 +317,7 @@ export const PRODUCTS: Product[] = [
   },
 ]
 
-// ── Utilitaires ───────────────────────────────────────────
+// ── Utilitaires ────────────────────────────────────────────────────
 export const getProductsByCategory = (cat: string) =>
   PRODUCTS.filter(p => p.category === cat)
 
@@ -215,11 +325,13 @@ export const getProductById = (id: string) =>
   PRODUCTS.find(p => p.id === id) ?? null
 
 export const CATEGORIES = [
-  { id: 'tv',       label: 'Meubles TV',  emoji: '📺' },
-  { id: 'murs',     label: 'Revêtements', emoji: '🪨' },
-  { id: 'lumiere',  label: 'Éclairage',   emoji: '💡' },
-  { id: 'mobilier', label: 'Mobilier',    emoji: '🛋️' },
-  { id: 'services', label: 'Services',    emoji: '🔧' },
+  { id: 'tv-simple', label: 'Meubles TV',      emoji: '📺', section: 'tv' },
+  { id: 'tv-deco',   label: 'TV + Placo Déco', emoji: '🏛️', section: 'tv' },
+  { id: 'tv',        label: 'TV Classiques',   emoji: '🖥️', section: 'tv' },
+  { id: 'murs',      label: 'Revêtements',     emoji: '🪨', section: 'autres' },
+  { id: 'lumiere',   label: 'Éclairage',       emoji: '💡', section: 'autres' },
+  { id: 'mobilier',  label: 'Mobilier',        emoji: '🛋️', section: 'autres' },
+  { id: 'services',  label: 'Services',        emoji: '🔧', section: 'autres' },
 ] as const
 
 export const formatPrice = (da: number) =>
