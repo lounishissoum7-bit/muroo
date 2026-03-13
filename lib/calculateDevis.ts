@@ -1,218 +1,134 @@
 // Fichier : lib/calculateDevis.ts
-'use client'
-import { useMemo } from 'react'
-import { useMuroStore, useActiveRoom, useCartTotal } from './store'
-import type { CartItem } from './store'
+import type { Product } from './store'
+import { calcStats, type RoomDimensions } from './roomScaler'
 
-// ═══════════════════════════════════════════════════════
-// TYPES DEVIS
-// ═══════════════════════════════════════════════════════
+export const TVA_RATE = 0.19
+
 export interface DevisLine {
-  label:     string
-  quantity:  number
-  unit:      string
+  product:   Product
+  qty:       number
   unitPrice: number
-  total:     number
-  note?:     string
+  totalHT:   number
 }
 
-export interface DevisResult {
+export interface Devis {
   lines:       DevisLine[]
-  subtotalDA:  number
-  tvaDA:       number   // TVA 19% Algérie
-  totalDA:     number
-  summary:     string   // Texte WhatsApp formaté
+  subtotalHT:  number
+  tva:         number
+  totalTTC:    number
+  room:        RoomDimensions
   roomName:    string
-  surfaceM2:   number
-  perimeterM:  number
-  wallAreaM2:  number
-  date:        string
+  roomIcon:    string
+  generatedAt: string
 }
 
-// ═══════════════════════════════════════════════════════
-// HOOK PRINCIPAL
-// ═══════════════════════════════════════════════════════
-export function useDevis(): DevisResult {
-  const room    = useActiveRoom()
-  const cart    = useMuroStore(s => s.cart)
-  const totals  = useCartTotal()
-
-  return useMemo(() => {
-    // ── Calcul surfaces depuis les mesures ──────────────
-    const walls   = room?.measurements.filter(m => m.type === 'wall')   ?? []
-    const doors   = room?.measurements.filter(m => m.type === 'door')   ?? []
-    const windows = room?.measurements.filter(m => m.type === 'window') ?? []
-    const heights = room?.measurements.filter(m => m.type === 'height') ?? []
-
-    const ceilingH   = room?.ceilingH ?? 2.5
-    const perimeterM = walls.reduce((s, w) => s + w.valueM, 0)
-    const sorted     = [...walls].sort((a, b) => b.valueM - a.valueM)
-    const L          = sorted[0]?.valueM ?? 0
-    const D          = sorted[Math.floor(sorted.length / 2)]?.valueM ?? L
-    const surfaceM2  = L * D
-
-    let wallAreaM2   = perimeterM * ceilingH
-    doors.forEach(d   => { wallAreaM2 -= d.valueM * Math.min(ceilingH, 2.1) })
-    windows.forEach(w => { wallAreaM2 -= w.valueM * 1.2 })
-    wallAreaM2 = Math.max(0, wallAreaM2)
-
-    // ── Lignes du devis depuis le panier ────────────────
-    const lines: DevisLine[] = cart.map(item => {
-      const q     = item.quantity
-      const surf  = item.surface ?? 1
-      const price = item.product.priceDA
-      const unit  = item.product.priceUnit
-
-      let qty    = q
-      let total  = price * q
-
-      if (unit === 'm²' && surf > 0) {
-        qty   = surf * q
-        total = price * qty
-      }
-
-      return {
-        label:     item.product.name,
-        quantity:  Math.round(qty * 100) / 100,
-        unit:      unit === 'm²' ? 'm²' : unit === 'ml' ? 'ml' : 'unité',
-        unitPrice: price,
-        total,
-        note: unit === 'm²' ? `${surf.toFixed(1)} m² × ${q} unité(s)` : undefined,
-      }
-    })
-
-    const subtotalDA = lines.reduce((s, l) => s + l.total, 0)
-    const tvaDA      = subtotalDA * 0.19
-    const totalDA    = subtotalDA + tvaDA
-
-    // ── Message WhatsApp formaté ─────────────────────────
-    const date = new Date().toLocaleDateString('fr-DZ', {
-      day: '2-digit', month: 'long', year: 'numeric',
-    })
-
-    const summary = buildWhatsAppMessage({
-      roomName:   room?.name ?? 'Pièce',
-      date,
-      surfaceM2,
-      perimeterM,
-      wallAreaM2,
-      ceilingH,
-      lines,
-      subtotalDA,
-      tvaDA,
-      totalDA,
-    })
-
+export function buildDevis(
+  placed: Array<{ product: Product; qty: number; surface?: number }>,
+  room: RoomDimensions,
+  roomName: string,
+  roomIcon: string,
+): Devis {
+  const lines: DevisLine[] = placed.map(({ product, qty, surface }) => {
+    const effectiveQty = product.priceUnit === 'm2' && surface ? surface : qty
     return {
-      lines,
-      subtotalDA,
-      tvaDA,
-      totalDA,
-      summary,
-      roomName:   room?.name ?? '—',
-      surfaceM2,
-      perimeterM,
-      wallAreaM2,
-      date,
+      product,
+      qty:      +effectiveQty.toFixed(2),
+      unitPrice: product.priceDA,
+      totalHT:  +(product.priceDA * effectiveQty).toFixed(0),
     }
-  }, [room, cart, totals])
+  })
+  const subtotalHT = lines.reduce((s, l) => s + l.totalHT, 0)
+  const tva        = +(subtotalHT * TVA_RATE).toFixed(0)
+  return { lines, subtotalHT, tva, totalTTC: subtotalHT + tva, room, roomName, roomIcon, generatedAt: new Date().toISOString() }
 }
 
-// ═══════════════════════════════════════════════════════
-// CALCUL MATÉRIAUX AUTOMATIQUE (depuis mesures)
-// ═══════════════════════════════════════════════════════
-export function useMaterialsEstimate() {
-  const room = useActiveRoom()
+export const fmtDA   = (n: number) => new Intl.NumberFormat('fr-DZ').format(n) + ' DA'
+export const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('fr-DZ', { day: '2-digit', month: 'long', year: 'numeric' })
 
-  return useMemo(() => {
-    if (!room) return null
+export function buildWhatsAppMessage(devis: Devis): string {
+  const stats = calcStats(devis.room)
+  const lines = devis.lines.map(l => `- ${l.product.emoji} ${l.product.name} x${l.qty} = ${fmtDA(l.totalHT)}`).join('\n')
+  return encodeURIComponent(
+`Devis MURO by L&Y
+Piece: ${devis.roomIcon} ${devis.roomName} | ${devis.room.longueur}x${devis.room.largeur}x${devis.room.hauteur}m | Sol: ${stats.surfaceSol}m2
 
-    const walls   = room.measurements.filter(m => m.type === 'wall')
-    const doors   = room.measurements.filter(m => m.type === 'door')
-    const windows = room.measurements.filter(m => m.type === 'window')
-    const H       = room.ceilingH
+${lines}
 
-    const sorted   = [...walls].sort((a, b) => b.valueM - a.valueM)
-    const L        = sorted[0]?.valueM ?? 0
-    const D        = sorted[Math.floor(sorted.length / 2)]?.valueM ?? L
-    const perim    = walls.reduce((s, w) => s + w.valueM, 0)
-    const floor    = L * D
-
-    let wallArea   = perim * H
-    doors.forEach(d   => { wallArea -= d.valueM * 2.1 })
-    windows.forEach(w => { wallArea -= w.valueM * 1.2 })
-    wallArea = Math.max(0, wallArea)
-
-    return {
-      perimeterM:    Math.round(perim * 100) / 100,
-      floorM2:       Math.round(floor * 100) / 100,
-      wallM2:        Math.round(wallArea * 100) / 100,
-      ceilingM2:     Math.round(floor * 100) / 100,
-      volumeM3:      Math.round(floor * H * 100) / 100,
-      // Quantités commandables (+10% chutes)
-      carrelageM2:   Math.ceil(floor * 1.10),
-      peintureL:     Math.ceil((wallArea + floor) * 0.35),
-      enduitKg:      Math.ceil(wallArea * 1.8),
-      plinthesMl:    Math.ceil(perim * 1.05),
-      faïenceM2:     Math.ceil(wallArea * 0.3 * 1.10),
-    }
-  }, [room])
+HT: ${fmtDA(devis.subtotalHT)} | TVA 19%: ${fmtDA(devis.tva)} | TTC: ${fmtDA(devis.totalTTC)}
+Date: ${fmtDate(devis.generatedAt)} | muro-lny.vercel.app`
+  )
 }
 
-// ═══════════════════════════════════════════════════════
-// GÉNÉRATEUR MESSAGE WHATSAPP
-// ═══════════════════════════════════════════════════════
-interface WhatsAppParams {
-  roomName:   string
-  date:       string
-  surfaceM2:  number
-  perimeterM: number
-  wallAreaM2: number
-  ceilingH:   number
-  lines:      DevisLine[]
-  subtotalDA: number
-  tvaDA:      number
-  totalDA:    number
+export function openWhatsApp(devis: Devis, phone = '213xxxxxxxxx') {
+  window.open(`https://wa.me/${phone}?text=${buildWhatsAppMessage(devis)}`, '_blank')
 }
 
-function buildWhatsAppMessage(p: WhatsAppParams): string {
-  const fmt = (n: number) => new Intl.NumberFormat('fr-DZ').format(Math.round(n))
+export async function exportPDF(devis: Devis) {
+  const { jsPDF }   = await import('jspdf')
+  const autoTable   = (await import('jspdf-autotable')).default
+  const stats       = calcStats(devis.room)
+  const doc         = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  const W           = doc.internal.pageSize.getWidth()
+  const PH          = doc.internal.pageSize.getHeight()
+  const gold        = [201, 169, 110] as [number,number,number]
+  const dark        = [13, 11, 8]    as [number,number,number]
+  const dark2       = [26, 22, 16]   as [number,number,number]
 
-  const itemsText = p.lines.map(l =>
-    `• ${l.label} (${l.quantity} ${l.unit}) → ${fmt(l.total)} DA`
-  ).join('\n')
+  doc.setFillColor(...dark);  doc.rect(0, 0, W, 38, 'F')
+  doc.setFillColor(...gold);  doc.rect(0, 36, W, 2, 'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(28); doc.setTextColor(...gold)
+  doc.text('MURO', 14, 24)
+  doc.setFontSize(9); doc.setTextColor(180,168,152)
+  doc.text('by L & Y  |  Oran, Algerie', 14, 32)
+  doc.text(`Devis ${Date.now().toString(36).toUpperCase()}  |  ${fmtDate(devis.generatedAt)}`, W-14, 24, {align:'right'})
 
-  return `🏠 *DEVIS MURO by L&Y*
-━━━━━━━━━━━━━━━━━━━━
-📍 Pièce : ${p.roomName}
-📅 Date  : ${p.date}
+  doc.setFillColor(...dark2); doc.roundedRect(14,44,W-28,30,3,3,'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...gold)
+  doc.text(`${devis.roomIcon} ${devis.roomName}`, 20, 55)
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(184,168,152)
+  doc.text(`${devis.room.longueur}m x ${devis.room.largeur}m x ${devis.room.hauteur}m  |  Sol: ${stats.surfaceSol}m2  |  Murs: ${stats.surfaceMurs}m2  |  Vol: ${stats.volume}m3`, 20, 63)
 
-📐 *Mesures*
-• Surface sol   : ${p.surfaceM2.toFixed(2)} m²
-• Périmètre     : ${p.perimeterM.toFixed(2)} m
-• Surface murs  : ${p.wallAreaM2.toFixed(2)} m²
-• Hauteur plafond: ${p.ceilingH.toFixed(2)} m
+  const rows = devis.lines.map(l => [
+    `${l.product.emoji} ${l.product.name}`, l.product.priceUnit, l.qty.toString(), fmtDA(l.unitPrice), fmtDA(l.totalHT)
+  ])
+  autoTable(doc, {
+    startY: 82,
+    head: [['Produit','Unite','Qte','Prix Unit. HT','Total HT']],
+    body: rows,
+    theme: 'grid',
+    headStyles:         { fillColor: dark,   textColor: gold, fontStyle: 'bold', fontSize: 9 },
+    bodyStyles:         { fillColor: [20,17,11], textColor: [232,223,208], fontSize: 9 },
+    alternateRowStyles: { fillColor: dark2 },
+    columnStyles: { 0:{cellWidth:72}, 1:{cellWidth:22,halign:'center'}, 2:{cellWidth:18,halign:'center'}, 3:{cellWidth:36,halign:'right'}, 4:{cellWidth:36,halign:'right'} },
+    margin: { left:14, right:14 },
+    styles: { lineColor:[46,40,32], lineWidth:0.3 },
+  })
 
-🛒 *Produits sélectionnés*
-${itemsText || '(aucun produit sélectionné)'}
+  const fy = (doc as any).lastAutoTable.finalY + 8
+  const tr = (lbl: string, val: string, y: number, hi = false) => {
+    if (hi) { doc.setFillColor(...gold); doc.roundedRect(W-88,y-5,74,10,2,2,'F'); doc.setTextColor(...dark) }
+    else doc.setTextColor(184,168,152)
+    doc.setFont('helvetica', hi?'bold':'normal'); doc.setFontSize(hi?11:9)
+    doc.text(lbl, W-90, y, {align:'right'}); doc.text(val, W-14, y, {align:'right'})
+  }
+  tr('Sous-total HT', fmtDA(devis.subtotalHT), fy)
+  tr('TVA (19%)',     fmtDA(devis.tva),         fy+8)
+  doc.setFillColor(46,40,32); doc.rect(14, fy+11, W-28, 0.3,'F')
+  tr('TOTAL TTC',    fmtDA(devis.totalTTC),    fy+22, true)
 
-━━━━━━━━━━━━━━━━━━━━
-💰 Sous-total : ${fmt(p.subtotalDA)} DA
-📋 TVA 19%    : ${fmt(p.tvaDA)} DA
-✅ *TOTAL TTC  : ${fmt(p.totalDA)} DA*
+  doc.setFillColor(...dark2); doc.rect(0, PH-20, W, 20, 'F')
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(122,110,96)
+  doc.text('Devis valable 30 jours | Pose et livraison disponibles sur Oran', W/2, PH-12, {align:'center'})
+  doc.setTextColor(...gold)
+  doc.text('MURO by L&Y  |  muro-lny.vercel.app', W/2, PH-6, {align:'center'})
 
-📱 Application MURO by L&Y
-🌐 muro-lny.vercel.app
-📍 Oran, Algérie
-
-_Pour confirmer ou modifier ce devis, répondez à ce message._`
+  doc.save(`Devis-MURO-${devis.roomName.replace(/\s/g,'-')}-${Date.now()}.pdf`)
 }
 
-// ── Ouvrir WhatsApp avec le message ──────────────────────
-export const sendDevisWhatsApp = (message: string, phone?: string) => {
-  const encoded = encodeURIComponent(message)
-  const url     = phone
-    ? `https://wa.me/${phone}?text=${encoded}`
-    : `https://wa.me/?text=${encoded}`
-  window.open(url, '_blank')
+export async function exportCanvasAsImage(canvasEl: HTMLCanvasElement | null) {
+  if (!canvasEl) return
+  const a = document.createElement('a')
+  a.download = `MURO-Sim-${Date.now()}.png`
+  a.href = canvasEl.toDataURL('image/png', 1.0)
+  a.click()
 }
