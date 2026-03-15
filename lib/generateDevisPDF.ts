@@ -135,11 +135,7 @@ function drawRoomPlan(
   doc.line(cxR-1.5, oy,      cxR+1.5, oy)
   doc.line(cxR-1.5, oy+rH,   cxR+1.5, oy+rH)
   doc.setTextColor(30, 100, 160)
-  doc.save()
-  doc.translate(cxR + 5, oy + rH/2)
-  doc.rotate(-90)
-  doc.text(`${la.toFixed(2)} m`, 0, 0, { align: 'center' })
-  doc.restore()
+  doc.text(`${la.toFixed(2)} m`, cxR + 5, oy + rH/2, { align: 'center', angle: 90 })
 
   // ── Badge hauteur (en haut à gauche) ──
   doc.setFillColor(13, 11, 8)
