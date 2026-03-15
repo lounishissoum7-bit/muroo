@@ -1,9 +1,8 @@
+'use client'
 // @ts-nocheck
 import React from 'react'
 // components/Sim3D.tsx
 // PHASE 2 — Simulation 3D professionnelle avec produits MURO
-'use client'
-
 import { useRef, useState, useCallback, useEffect, Suspense, useMemo } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Text, OrbitControls, PerspectiveCamera, Line } from '@react-three/drei'

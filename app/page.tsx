@@ -1,5 +1,5 @@
-// Fichier : app/page.tsx
 'use client'
+// Fichier : app/page.tsx
 
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'

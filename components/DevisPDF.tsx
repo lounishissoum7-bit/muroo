@@ -1,6 +1,6 @@
-// Fichier : components/DevisPDF.tsx
-// @ts-nocheck
 'use client'
+// @ts-nocheck
+// Fichier : components/DevisPDF.tsx
 
 import { useCallback } from 'react'
 import { useDevis, sendDevisWhatsApp } from '@/lib/calculateDevis'
@@ -84,8 +84,8 @@ export function useDevisPDF() {
         body: devis.lines.map(l => [
           l.label,
           l.qty.toString(),
-          l.unitPricePrice,
-          formatPrice(l.unitPricePrice),
+          l.unitPrice,
+          l.unitPrice,
           l.total,
         ]),
         headStyles: {
@@ -227,13 +227,13 @@ export default function DevisCard() {
               <div className="flex-1 min-w-0">
                 <div className="text-muro-text text-[12px] font-bold truncate">{line.label}</div>
                 <div className="text-muro-text4 text-[10px] mt-0.5">
-                  {line.quantity} {line.unit} × {formatPrice(line.unitPrice)}
-                  {line.note && ` · ${line.note}`}
+                  {line.qty} × {line.unitPrice}
+                  
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-[13px] font-black" style={{ color: 'var(--gold)' }}>
-                  {formatPrice(line.total)}
+                  {line.total}
                 </span>
                 <button
                   onClick={() => {

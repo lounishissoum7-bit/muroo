@@ -1,5 +1,5 @@
-// Fichier : app/devis/page.tsx
 'use client'
+// Fichier : app/devis/page.tsx
 
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'

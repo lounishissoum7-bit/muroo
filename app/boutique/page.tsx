@@ -1,5 +1,5 @@
-// Fichier : app/boutique/page.tsx
 'use client'
+// Fichier : app/boutique/page.tsx
 
 import { useState, useMemo, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'

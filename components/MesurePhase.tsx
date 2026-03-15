@@ -1,7 +1,7 @@
+'use client'
 // @ts-nocheck
 // components/MesurePhase.tsx
 // PHASE 1 — Saisie des mesures de la pièce (manuelle + caméra)
-'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -49,7 +49,7 @@ function useCamera() {
 }
 
 // ── Composant principal ──────────────────────────────────────────
-export default function MesurePhase({ onDone }: { onDone: (r: RoomData) => void }) {
+export default function MesurePhase({ onDone }: { onDone: (r: RoomData, name?: string, icon?: string) => void }) {
   const router = useRouter()
   const { videoRef, active: camActive, start: startCam, stop: stopCam } = useCamera()
 

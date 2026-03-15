@@ -1,9 +1,8 @@
+'use client'
 // @ts-nocheck
 import React from 'react'
 // Fichier : components/Simulation3D.tsx
 // Caméra réelle via getUserMedia — ZERO WebXR — fonctionne sur tout Android/iPhone
-'use client'
-
 import {
   useRef, useEffect, useState, useCallback, Suspense
 } from 'react'

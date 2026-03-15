@@ -1,8 +1,7 @@
+'use client'
 import React from 'react'
 // Fichier : components/PhotoOverlay.tsx
 // Upload photo + superposition 3D (mode "Photo Overlay")
-'use client'
-
 import { useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 

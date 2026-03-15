@@ -1,5 +1,5 @@
-// Fichier : components/BoutiqueHero.tsx
 'use client'
+// Fichier : components/BoutiqueHero.tsx
 
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'

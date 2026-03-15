@@ -1,7 +1,7 @@
-// Fichier : components/ModelViewer.tsx
-// @ts-nocheck
 'use client'
-
+// @ts-nocheck
+import React from 'react'
+// Fichier : components/ModelViewer.tsx
 /**
  * ModelViewer — charge un fichier .glb Three.js
  * Fallback automatique vers une boîte colorée si le modèle n'est pas dispo
@@ -245,7 +245,6 @@ function ShadowBlob({ dims }: { dims: { w: number; h: number; d: number } }) {
 // ─────────────────────────────────────────────────────────────────
 // ERROR BOUNDARY pour GLB
 // ─────────────────────────────────────────────────────────────────
-import React from 'react'
 
 class GLBErrorBoundary extends React.Component<
   { children: React.ReactNode; onError: () => void },

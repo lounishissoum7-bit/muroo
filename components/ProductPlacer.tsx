@@ -1,6 +1,6 @@
+'use client'
 // Fichier : components/ProductPlacer.tsx
 // Panneau latéral catalogue + liste des objets placés
-'use client'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'

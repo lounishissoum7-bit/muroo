@@ -1,6 +1,6 @@
+'use client'
 // Fichier : components/CartFloating.tsx
 // Panier flottant + WhatsApp devis complet + PDF + Deep-link simulation
-'use client'
 
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'

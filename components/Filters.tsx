@@ -1,5 +1,5 @@
-// Fichier : components/Filters.tsx
 'use client'
+// Fichier : components/Filters.tsx
 
 import { motion } from 'framer-motion'
 

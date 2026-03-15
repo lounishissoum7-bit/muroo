@@ -1,8 +1,7 @@
+'use client'
 import React from 'react'
 // Fichier : components/LiveCameraSimulation.tsx
 // getUserMedia + Three.js overlay aligné pixel-perfect sur la vidéo
-'use client'
-
 import {
   useRef, useState, useCallback, useEffect, Suspense, useMemo,
 } from 'react'

@@ -1,6 +1,6 @@
+'use client'
 // Fichier : components/Background3D.tsx
 // Fond 3D léger — panneaux flottants parallax, ZERO impact perf
-'use client'
 
 import { useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'

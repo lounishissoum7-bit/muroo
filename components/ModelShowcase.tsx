@@ -1,8 +1,7 @@
+'use client'
 // @ts-nocheck
 import React from 'react'
 // Fichier : components/ModelShowcase.tsx
-'use client'
-
 /**
  * ModelShowcase — carrousel interactif 3D pour la boutique
  * Tourne automatiquement, zoom au tap, fond transparent

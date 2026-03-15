@@ -1,7 +1,7 @@
+'use client'
 // Fichier : app/simulation/page.tsx
 // Orchestrateur Phase 1 (Mesure) → Phase 2 (Simulation 3D Live)
 // Deep-link : /simulation?product=<id> pré-sélectionne le produit
-'use client'
 
 import dynamic from 'next/dynamic'
 import { useState, useCallback, useEffect } from 'react'

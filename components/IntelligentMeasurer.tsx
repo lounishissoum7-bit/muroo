@@ -1,6 +1,6 @@
+'use client'
 // Fichier : components/IntelligentMeasurer.tsx
 // Système de mesure intelligent — Google Measure style — getUserMedia + géométrie
-'use client'
 
 import {
   useRef, useState, useCallback, useEffect, useMemo

@@ -1,7 +1,6 @@
+'use client'
 import React from 'react'
 // Fichier : components/ProductCard.tsx
-'use client'
-
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'

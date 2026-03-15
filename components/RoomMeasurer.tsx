@@ -1,5 +1,5 @@
-// Fichier : components/RoomMeasurer.tsx
 'use client'
+// Fichier : components/RoomMeasurer.tsx
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
