@@ -1,0 +1,158 @@
+/* Fichier : app/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Raleway:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE — MURO by L&Y
+═══════════════════════════════════════════════════════ */
+@layer base {
+  :root {
+    --bg:         #0D0B08;
+    --bg2:        #13110D;
+    --bg3:        #1A1610;
+    --card:       #1E1A14;
+    --border:     #2E2820;
+    --gold:       #C9A96E;
+    --gold2:      #E8C98A;
+    --gold3:      #9A7840;
+    --text:       #FAF6EE;
+    --text2:      #E8DFD0;
+    --text3:      #B8A898;
+    --text4:      #7A6E60;
+    --safe-b:     env(safe-area-inset-bottom, 0px);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Raleway', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbars dorées */
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gold3); border-radius: 99px; }
+  * { scrollbar-width: thin; scrollbar-color: var(--gold3) transparent; }
+
+  /* Selection text */
+  ::selection { background: rgba(201, 169, 110, 0.25); color: var(--gold2); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMPOSANTS UTILITAIRES
+═══════════════════════════════════════════════════════ */
+@layer components {
+  /* Filigrane MURO */
+  .muro-watermark {
+    @apply pointer-events-none select-none fixed inset-0 z-0 overflow-hidden;
+  }
+  .muro-watermark::before {
+    content: 'MURO';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -52%) rotate(-18deg);
+    font-size: clamp(90px, 30vw, 180px);
+    font-weight: 900;
+    letter-spacing: -5px;
+    color: rgba(201, 169, 110, 0.025);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    white-space: nowrap;
+  }
+
+  /* Grain texture luxe */
+  .muro-grain {
+    @apply pointer-events-none fixed inset-0 z-10 opacity-[0.025];
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+  }
+
+  /* Bouton or principal */
+  .btn-gold {
+    @apply px-6 py-4 rounded-2xl font-bold text-muro-dark text-sm
+           bg-gold-gradient shadow-gold active:scale-[0.98]
+           transition-all duration-150 touch-manipulation
+           flex items-center justify-center gap-2;
+    font-family: 'Raleway', sans-serif;
+    letter-spacing: 0.3px;
+  }
+
+  /* Bouton secondaire */
+  .btn-ghost {
+    @apply px-5 py-3.5 rounded-xl font-semibold text-muro-text3 text-sm
+           border border-muro-border2 bg-muro-card
+           active:bg-muro-card2 transition-all duration-150
+           flex items-center justify-center gap-2;
+  }
+
+  /* Card luxe */
+  .card-muro {
+    @apply bg-muro-card border border-muro-border rounded-2xl
+           shadow-card overflow-hidden;
+  }
+
+  /* Section title */
+  .section-title {
+    @apply text-[10px] font-extrabold tracking-[1.5px] uppercase text-muro-gold3;
+  }
+
+  /* Gold text shimmer effect */
+  .gold-text {
+    background: linear-gradient(135deg, #E8C98A 0%, #C9A96E 40%, #9A7840 70%, #E8C98A 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Chip mesure AR */
+  .ar-chip {
+    @apply px-3 py-1 rounded-full text-[10px] font-semibold
+           bg-muro-dark/80 backdrop-blur-md
+           border border-muro-gold/25 text-muro-text2
+           flex items-center gap-1.5;
+  }
+
+  /* AR live dot */
+  .ar-live-dot {
+    @apply w-1.5 h-1.5 rounded-full bg-muro-gold;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS STAGGERÉES
+═══════════════════════════════════════════════════════ */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* ═══════════════════════════════════════════════════════
+   THREE.JS CANVAS
+═══════════════════════════════════════════════════════ */
+canvas {
+  touch-action: none;
+  outline: none;
+}
