@@ -112,14 +112,14 @@ function TeaserCard({ product, index }: { product: Product; index: number }) {
     router.push(`/boutique?filtre=${product.category}&product=${product.id}`)
   }
 
-  const handleAddToCart = (e: MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     addToCart(product, 1)
     setAddedOk(true)
     setTimeout(() => setAddedOk(false), 1800)
   }
 
-  const handleSim = (e: MouseEvent) => {
+  const handleSim = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     setPendingProductId(product.id)
     router.push(`/simulation?product=${product.id}`)
