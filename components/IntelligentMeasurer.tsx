@@ -107,7 +107,6 @@ function useCamera() {
   const [videoSize, setVideoSize] = useState({ w:1280, h:720 })
 
   const start = useCallback(async () => {
-    if (camState === 'active') return
     setCamState('requesting')
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -123,7 +122,7 @@ function useCamera() {
     } catch(e:any) {
       setCamState(e?.name==='NotFoundError' ? 'unavailable' : 'denied')
     }
-  }, [camState])
+  }, [])
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop())

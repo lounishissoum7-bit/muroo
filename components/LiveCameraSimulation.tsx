@@ -14,7 +14,7 @@ import type { PlacedItem } from './ProductPlacer'
 import type { Product } from '@/lib/store'
 
 // ══════════════════════════════════════════════════════════════════
-// HOOK — getUserMedia (demande permission une seule fois)
+// HOOK — getUserMedia robuste (retry + iOS Safari compatible)
 // ══════════════════════════════════════════════════════════════════
 type CamState = 'idle' | 'requesting' | 'active' | 'denied' | 'unavailable'
 
@@ -25,31 +25,51 @@ function useCamera() {
   const [aspect,  setAspect]   = useState(16 / 9)
 
   const start = useCallback(async () => {
-    if (state === 'active') return          // déjà lancé
+    // Arrêter le stream précédent si existant
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop())
+      streamRef.current = null
+      if (videoRef.current) videoRef.current.srcObject = null
+    }
+
     setCamState('requesting')
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: 'environment' },  // caméra arrière
-          frameRate:  { max: 30 },
-          width:      { ideal: 1280 },
-          height:     { ideal: 720 },
-        },
-        audio: false,
-      })
+      // Essai 1 : caméra arrière idéale
+      let stream: MediaStream | null = null
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, frameRate: { max: 30 }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        })
+      } catch {
+        // Essai 2 : toute caméra disponible (fallback)
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      }
+
       streamRef.current = stream
       const track    = stream.getVideoTracks()[0]
       const settings = track.getSettings()
       if (settings.width && settings.height) setAspect(settings.width / settings.height)
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        await videoRef.current.play()
+        videoRef.current.setAttribute('playsinline', 'true')
+        videoRef.current.setAttribute('autoplay', 'true')
+        videoRef.current.muted = true
+        // Sur iOS Safari il faut appeler play() après un geste utilisateur
+        try { await videoRef.current.play() } catch { /* iOS autoplay policy */ }
       }
       setCamState('active')
     } catch (err: any) {
-      setCamState(err?.name === 'NotFoundError' ? 'unavailable' : 'denied')
+      const name = err?.name ?? ''
+      if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        setCamState('unavailable')
+      } else {
+        // NotAllowedError, PermissionDeniedError, etc.
+        setCamState('denied')
+      }
     }
-  }, [state])
+  }, [])   // ← pas de dépendance sur state → peut être appelé à tout moment
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop())
