@@ -107,7 +107,7 @@ function IsoSketch({ l, la, h, icon }: { l: number; la: number; h: number; icon:
 // ══════════════════════════════════════════════════════════════════
 export default function RoomMeasurer({ onDone }: Props) {
   const [step,       setStep]       = useState<'type'|'dims'|'recap'>('type')
-  const [preset,     setPreset]     = useState(PRESETS[0])
+  const [preset,     setPreset]     = useState<typeof PRESETS[number]>(PRESETS[0])
   const [longueur,   setLongueur]   = useState('5.5')
   const [largeur,    setLargeur]    = useState('4.2')
   const [hauteur,    setHauteur]    = useState('2.7')
