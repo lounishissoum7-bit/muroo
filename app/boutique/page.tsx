@@ -1,20 +1,22 @@
 'use client'
 // Fichier : app/boutique/page.tsx
+// Connexion complète — lit ?filtre= et ?product= depuis l'URL + Zustand store
 
-import { useState, useMemo, useRef, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useMemo, useRef, useCallback, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { PRODUCTS, formatPrice } from '@/lib/products'
-import { useCartTotal } from '@/lib/store'
+import { useCartTotal, useMuroStore } from '@/lib/store'
 import type { Product } from '@/lib/store'
 import type { FilterId, PriceRangeId } from '@/components/Filters'
 
 // SSR-safe dynamic imports
-const BoutiqueHero  = dynamic(() => import('@/components/BoutiqueHero'),  { ssr: false })
-const ProductCard   = dynamic(() => import('@/components/ProductCard'),   { ssr: false })
-const Filters       = dynamic(() => import('@/components/Filters'),       { ssr: false })
-const CartFloating  = dynamic(() => import('@/components/CartFloating'),  { ssr: false })
+const BoutiqueHero     = dynamic(() => import('@/components/BoutiqueHero'),     { ssr: false })
+const ProductCard      = dynamic(() => import('@/components/ProductCard'),      { ssr: false })
+const Filters          = dynamic(() => import('@/components/Filters'),          { ssr: false })
+const CartFloating     = dynamic(() => import('@/components/CartFloating'),     { ssr: false })
+const MobileBottomNav  = dynamic(() => import('@/components/MobileBottomNav'),  { ssr: false })
 
 // ── Filtrage par prix ─────────────────────────────────────────────
 function matchesPrice(p: Product, range: PriceRangeId): boolean {
@@ -142,7 +144,8 @@ function EmptyState({ onReset }: { onReset: () => void }) {
 // ══════════════════════════════════════════════════════════════════
 // PAGE PRINCIPALE
 // ══════════════════════════════════════════════════════════════════
-export default function BoutiquePage() {
+// ── Inner component (uses useSearchParams) ───────────────────────
+function BoutiqueInner() {
   const router          = useRouter()
   const productsRef     = useRef<HTMLDivElement>(null)
   const { count, total }= useCartTotal()
@@ -151,6 +154,33 @@ export default function BoutiquePage() {
   const [priceRange, setPriceRange] = useState<PriceRangeId>('all')
   const [search,     setSearch]     = useState('')
   const [sortBy,     setSortBy]     = useState<'default'|'price-asc'|'price-desc'>('default')
+  const searchParams = useSearchParams()
+  const { pendingCategoryFilter, setPendingCategoryFilter, setPendingProductId } = useMuroStore(s => ({
+    pendingCategoryFilter:    s.pendingCategoryFilter,
+    setPendingCategoryFilter: s.setPendingCategoryFilter,
+    setPendingProductId:      s.setPendingProductId,
+  }))
+
+  // ── Lire ?filtre= + ?product= à l'entrée de la page ──────────────
+  useEffect(() => {
+    // Priorité 1 : query param URL
+    const qFiltre  = searchParams?.get('filtre')
+    const qProduct = searchParams?.get('product')
+    // Priorité 2 : Zustand store (deep-link depuis accueil)
+    const storeFiltre = pendingCategoryFilter
+
+    const catFiltre = (qFiltre ?? storeFiltre) as FilterId | null
+    if (catFiltre && catFiltre !== 'all') {
+      setFilter(catFiltre)
+      // Scroll vers les produits après un court délai
+      setTimeout(() => productsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200)
+    }
+    if (storeFiltre) setPendingCategoryFilter(null)  // consomme le store
+
+    // Si un produit spécifique est ciblé, ouvrir sa quick view
+    if (qProduct) setPendingProductId(qProduct)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Produits filtrés
   const filtered = useMemo(() => {
@@ -184,8 +214,8 @@ export default function BoutiquePage() {
   const resetFilters = () => { setFilter('all'); setPriceRange('all'); setSearch('') }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, overflowY: 'auto', overscrollBehavior: 'contain',
-      background: '#FDFAF5', fontFamily: 'Raleway,sans-serif' }}>
+    <>
+    <div className="page-scroll" style={{ background: '#FDFAF5', fontFamily: 'Raleway,sans-serif', paddingBottom: 'var(--nav-total)' }}>
 
       {/* ── NAV HEADER ── */}
       <nav style={{
@@ -299,5 +329,20 @@ export default function BoutiquePage() {
       {/* ── PANIER FLOTTANT ── */}
       <CartFloating />
     </div>
+    <MobileBottomNav />
+    </>
+  )
+}
+
+// ── Export avec Suspense (requis pour useSearchParams) ──────────
+export default function BoutiquePage() {
+  return (
+    <Suspense fallback={
+      <div style={{ position:'fixed',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'#FDFAF5' }}>
+        <div style={{ fontSize:14,fontFamily:'Raleway,sans-serif',color:'#9A7840',fontWeight:700 }}>Chargement…</div>
+      </div>
+    }>
+      <BoutiqueInner />
+    </Suspense>
   )
 }

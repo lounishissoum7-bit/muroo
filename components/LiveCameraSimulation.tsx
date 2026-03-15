@@ -347,7 +347,25 @@ function RecapModal({ placed, room, roomName, roomIcon, onClose, canvasRef }: {
             style={{ width:'100%',height:52,borderRadius:14,border:'none',cursor:'pointer',background:'#25D366',color:'#fff',fontSize:14,fontWeight:800,fontFamily:'Raleway,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
             <span style={{ fontSize:20 }}>💬</span> Envoyer sur WhatsApp
           </button>
-          <button onClick={async()=>{ setExporting(true); await exportPDF(devis); setExporting(false) }}
+          <button onClick={async()=>{
+              setExporting(true)
+              try {
+                const { generateDevisPDF, genDevisNum, today } = await import('@/lib/generateDevisPDF')
+                const { useMuroStore } = await import('@/lib/store')
+                const clientInfo = useMuroStore.getState().clientInfo ?? { name:'', phone:'', address:'Oran' }
+                let screenshot: string | undefined
+                try {
+                  const cv = document.querySelector('canvas') as HTMLCanvasElement|null
+                  if (cv) screenshot = cv.toDataURL('image/png', 0.8)
+                } catch {}
+                await generateDevisPDF({
+                  cart: placed.map(p => ({ product:p.product, quantity:1, totalDA:p.product.priceDA })),
+                  room: { name:roomName, icon:roomIcon, longueur:room.longueur, largeur:room.largeur, hauteur:room.hauteur },
+                  client: clientInfo, devisNum: genDevisNum(), dateStr: today(),
+                  whatsapp:'213xxxxxxxxx', screenshotDataUrl: screenshot,
+                })
+              } catch(e){ console.error(e) } finally { setExporting(false) }
+            }}
             style={{ width:'100%',height:52,borderRadius:14,border:'none',cursor:'pointer',background:'linear-gradient(135deg,#9A7840,#C9A96E)',color:'#0D0B08',fontSize:14,fontWeight:800,fontFamily:'Raleway,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
             {exporting ? '⏳ Génération…' : <><span style={{fontSize:20}}>📄</span> Exporter PDF pro</>}
           </button>

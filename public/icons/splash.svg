@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532">
+  <rect width="1170" height="2532" fill="#0D0B08"/>
+  <rect width="1170" height="2532" fill="url(#bg)"/>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="30%">
+      <stop offset="0%" stop-color="rgba(201,169,110,0.12)"/>
+      <stop offset="100%" stop-color="#0D0B08"/>
+    </radialGradient>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9A7840"/>
+      <stop offset="50%" stop-color="#C9A96E"/>
+      <stop offset="100%" stop-color="#E8C98A"/>
+    </linearGradient>
+  </defs>
+  <!-- Logo centré -->
+  <g transform="translate(435, 1066)">
+    <rect width="300" height="300" rx="68" fill="#0D0B08" stroke="rgba(201,169,110,0.3)" stroke-width="2"/>
+    <path d="M65 225 L65 75 L115 163 L150 75 L150 225" 
+          stroke="url(#g)" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="172" y1="108" x2="228" y2="108" stroke="rgba(201,169,110,0.7)" stroke-width="8" stroke-linecap="round"/>
+    <line x1="172" y1="150" x2="228" y2="150" stroke="rgba(201,169,110,0.4)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="172" y1="192" x2="228" y2="192" stroke="rgba(201,169,110,0.7)" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="200" cy="82" r="14" fill="#C9A96E"/>
+  </g>
+  <text x="585" y="1420" text-anchor="middle" font-family="Georgia,serif" font-size="64" font-weight="700" fill="#C9A96E">MURO</text>
+  <text x="585" y="1468" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="600" fill="rgba(201,169,110,0.5)" letter-spacing="8">BY L &amp; Y · ORAN</text>
+</svg>

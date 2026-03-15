@@ -102,6 +102,14 @@ interface MuroStore {
   pendingProductId: string | null
   setPendingProductId: (id: string | null) => void
 
+  // ── Deep-link Accueil → Boutique (filtre) ────────────
+  pendingCategoryFilter: string | null
+  setPendingCategoryFilter: (cat: string | null) => void
+
+  // ── Infos client (pour le devis PDF) ──────────────
+  clientInfo: { name: string; phone: string; address: string }
+  setClientInfo: (info: Partial<{ name: string; phone: string; address: string }>) => void
+
   // ── UI ─────────────────────────────────────────────
   isARMode:    boolean
   setARMode:   (v: boolean) => void
@@ -226,6 +234,13 @@ export const useMuroStore = create<MuroStore>()(
         pendingProductId:    null,
         setPendingProductId: (id) => set({ pendingProductId: id }),
 
+        pendingCategoryFilter: null,
+        setPendingCategoryFilter: (cat) => set({ pendingCategoryFilter: cat }),
+
+        // ── Infos client ──────────────────────────────
+        clientInfo: { name: '', phone: '', address: 'Oran, Algérie' },
+        setClientInfo: (info) => set(s => ({ clientInfo: { ...s.clientInfo, ...info } })),
+
         // ── UI ────────────────────────────────────────
         isARMode: false,
         setARMode: (v) => set({ isARMode: v }),
@@ -237,6 +252,7 @@ export const useMuroStore = create<MuroStore>()(
           activeRoomId: state.activeRoomId,
           unit:         state.unit,
           cart:         state.cart,
+          clientInfo:   state.clientInfo,
         }),
       }
     )

@@ -28,8 +28,9 @@ const LiveCameraSimulation = dynamic(() => import('@/components/LiveCameraSimula
   ),
 })
 
-const ProductPlacer = dynamic(() => import('@/components/ProductPlacer'), { ssr: false })
-const PhotoOverlay  = dynamic(() => import('@/components/PhotoOverlay'),  { ssr: false })
+const ProductPlacer   = dynamic(() => import('@/components/ProductPlacer'),   { ssr: false })
+const PhotoOverlay    = dynamic(() => import('@/components/PhotoOverlay'),    { ssr: false })
+const MobileBottomNav = dynamic(() => import('@/components/MobileBottomNav'), { ssr: false })
 
 const nanoid = () => Math.random().toString(36).slice(2, 9)
 
@@ -113,6 +114,7 @@ function SimulationInner() {
   // ── Phase 1 ─────────────────────────────────────────────────────
   if (phase === 'mesure') {
     return (
+      <>
       <div style={{ position:'fixed',inset:0 }}>
         <IntelligentMeasurer onDone={handleMeasureDone} />
 
@@ -135,11 +137,20 @@ function SimulationInner() {
           </div>
         )}
       </div>
+      <MobileBottomNav />
+      </>
     )
   }
 
   // ── Phase 2 ─────────────────────────────────────────────────────
   return (
+    <>
+    {/* Hint paysage */}
+    <div className="sim-cam-hint" style={{ display:'none', position:'fixed', inset:0, zIndex:999, background:'rgba(13,11,8,0.95)', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:16 }}>
+      <span style={{ fontSize:48 }}>🔄</span>
+      <div style={{ fontFamily:'Raleway,sans-serif', fontSize:16, fontWeight:800, color:'#C9A96E' }}>Retournez en portrait</div>
+      <div style={{ fontFamily:'Raleway,sans-serif', fontSize:12, color:'#7A6E60' }}>La simulation caméra fonctionne en mode portrait uniquement</div>
+    </div>
     <div style={{ position:'fixed',inset:0,display:'flex',flexDirection:'column',background:'#0D0B08' }}>
 
       {/* Bannière deep-link en phase sim */}
@@ -196,6 +207,7 @@ function SimulationInner() {
         onPhotoReady={url => { setPhotoUrl(url); setShowPhoto(false) }}
       />
     </div>
+    </>
   )
 }
 

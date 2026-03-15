@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation'
 import { useMuroStore, useCartTotal } from '@/lib/store'
 import { formatPrice } from '@/lib/products'
 import { fmtDA, TVA_RATE } from '@/lib/calculateDevis'
+import dynamic from 'next/dynamic'
+const ExportPDF = dynamic(() => import('./ExportPDF'), { ssr: false })
 
 // ── WhatsApp message devis complet ───────────────────────────────
 function buildCartWhatsApp(cart: import('@/lib/store').CartItem[], subtotal: number, tva: number, total: number): string {
@@ -54,7 +56,7 @@ export default function CartFloating() {
   }))
   const { count, subtotal, tva, total } = useCartTotal()
   const [open,      setOpen]      = useState(false)
-  const [exporting, setExporting] = useState(false)
+  const [showPDF,   setShowPDF]   = useState(false)
   const [orderSent, setOrderSent] = useState(false)
 
   const waUrl = useMemo(
@@ -62,19 +64,9 @@ export default function CartFloating() {
     [cart, subtotal, tva, total]
   )
 
-  const handleExportPDF = async () => {
-    setExporting(true)
-    try {
-      const { buildDevis, exportPDF } = await import('@/lib/calculateDevis')
-      const devis = buildDevis(
-        cart.map(i => ({ product: i.product, qty: i.quantity, surface: i.surface })),
-        { longueur: 0, largeur: 0, hauteur: 0 },
-        'Commande boutique', '🛒'
-      )
-      await exportPDF(devis)
-    } finally {
-      setExporting(false)
-    }
+  const handleOpenPDF = () => {
+    setShowPDF(true)
+    setOpen(false)   // ferme le drawer panier
   }
 
   const handleWhatsApp = () => {
@@ -241,9 +233,9 @@ export default function CartFloating() {
                   </motion.button>
 
                   {/* CTA 2 — Devis PDF */}
-                  <button onClick={handleExportPDF} disabled={exporting}
+                  <button onClick={handleOpenPDF}
                     style={{ width:'100%',height:48,borderRadius:14,border:'none',cursor:'pointer',background:'linear-gradient(135deg,#9A7840,#D4AF77)',color:'#1C1610',fontSize:13,fontWeight:800,fontFamily:'Raleway,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:8,boxShadow:'0 4px 20px rgba(154,120,64,.28)',marginBottom:8 }}>
-                    {exporting ? '⏳ Génération…' : <><span style={{fontSize:18}}>📄</span> Télécharger devis PDF</>}
+                    <><span style={{fontSize:18}}>📄</span> Générer le devis PDF</>
                   </button>
 
                   {/* CTA 3 — Simuler en 3D */}
@@ -257,6 +249,11 @@ export default function CartFloating() {
           </>
         )}
       </AnimatePresence>
+      <ExportPDF
+        isOpen={showPDF}
+        onClose={() => setShowPDF(false)}
+        whatsapp="213xxxxxxxxx"
+      />
     </>
   )
 }

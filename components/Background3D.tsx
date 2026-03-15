@@ -14,7 +14,8 @@ function FloatingPanel({
   scale: [number,number,number]; color: string; speed: number; phase: number
 }) {
   const ref = useRef<THREE.Mesh>(null)
-  useFrame(state => {
+  useFrame((state, delta) => {
+    if (Math.round(state.clock.elapsedTime * 30) % 1 !== 0) return // throttle 30fps
     if (!ref.current) return
     const t = state.clock.elapsedTime
     ref.current.position.y = pos[1] + Math.sin(t * speed + phase) * 0.08
@@ -106,7 +107,9 @@ export default function Background3D() {
     <Canvas
       camera={{ position:[0,0,2.5], fov:55 }}
       gl={{ antialias:false, alpha:true, powerPreference:'low-power' }}
-      dpr={[1,1.5]}
+      dpr={[1, typeof window !== 'undefined' && window.devicePixelRatio > 2 ? 1.5 : 1]}
+      frameloop="demand"
+      performance={{ min: 0.5, max: 1 }}
       style={{ position:'absolute', inset:0, pointerEvents:'none' }}
     >
       <Scene />
