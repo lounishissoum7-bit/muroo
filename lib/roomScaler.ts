@@ -190,3 +190,6 @@ export function formatMeasure(meters: number): string {
   if (meters < 1) return `${Math.round(meters * 100)} cm`
   return `${meters.toFixed(2)} m`
 }
+
+// Alias for backward compatibility
+export type RoomData = RoomDimensions

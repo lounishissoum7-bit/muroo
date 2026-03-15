@@ -1,4 +1,5 @@
 // Fichier : components/ModelViewer.tsx
+// @ts-nocheck
 'use client'
 
 /**

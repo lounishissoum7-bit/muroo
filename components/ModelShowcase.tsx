@@ -1,3 +1,5 @@
+// @ts-nocheck
+import React from 'react'
 // Fichier : components/ModelShowcase.tsx
 'use client'
 

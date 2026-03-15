@@ -10,7 +10,7 @@ import { formatPrice } from '@/lib/products'
 import { fmtDA, TVA_RATE } from '@/lib/calculateDevis'
 
 // ── WhatsApp message devis complet ───────────────────────────────
-function buildCartWhatsApp(cart: ReturnType<typeof useMuroStore>['cart'], subtotal: number, tva: number, total: number): string {
+function buildCartWhatsApp(cart: import('@/lib/store').CartItem[], subtotal: number, tva: number, total: number): string {
   const lignes = cart.map(i =>
     `• ${i.product.emoji} *${i.product.name}* × ${i.quantity} → ${fmtDA(i.totalDA)}`
   ).join('\n')
@@ -227,7 +227,7 @@ export default function CartFloating() {
 
                   {/* CTA 1 — WhatsApp Commander */}
                   <motion.button whileTap={{scale:.97}} onClick={handleWhatsApp}
-                    style={{ width:'100%',height:52,borderRadius:14,border:'none',cursor:'pointer',
+                    style={{ width:'100%',height:52,borderRadius:14,cursor:'pointer',
                       background: orderSent ? 'rgba(37,211,102,.15)' : '#25D366',
                       border: orderSent ? '1px solid rgba(37,211,102,.4)' : 'none',
                       color: orderSent ? '#1A7A44' : '#fff',

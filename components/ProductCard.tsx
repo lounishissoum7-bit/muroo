@@ -1,3 +1,4 @@
+import React from 'react'
 // Fichier : components/ProductCard.tsx
 'use client'
 

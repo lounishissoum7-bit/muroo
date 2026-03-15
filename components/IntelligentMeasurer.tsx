@@ -792,7 +792,7 @@ export default function IntelligentMeasurer({ onDone }: Props) {
                 <div style={{ display:'flex',gap:6,marginBottom:16,overflowX:'auto',paddingBottom:4 }}>
                   {PRESETS.map(p => (
                     <button key={p.id} onClick={() => { setRoomName(p.label); setRoomIcon(p.icon) }}
-                      style={{ flexShrink:0,padding:'6px 12px',borderRadius:20,border:'none',cursor:'pointer',fontFamily:'Raleway,sans-serif',
+                      style={{ flexShrink:0,padding:'6px 12px',borderRadius:20,cursor:'pointer',fontFamily:'Raleway,sans-serif',
                         background:roomName===p.label?'rgba(201,169,110,0.15)':'rgba(30,26,20,0.9)',
                         border:`1px solid ${roomName===p.label?'rgba(201,169,110,0.45)':'rgba(61,53,40,0.8)'}`,
                         color:roomName===p.label?GOLD2:'#B8A898',fontSize:11,fontWeight:700 }}>

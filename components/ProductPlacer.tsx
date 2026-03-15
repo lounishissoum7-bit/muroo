@@ -86,7 +86,7 @@ export default function ProductPlacer({
             <div style={{ display:'flex',gap:6,marginBottom:12,overflowX:'auto',paddingBottom:4 }}>
               {CATS_DISPLAY.map(c => (
                 <button key={c.id} onClick={()=>setCatId(c.id)}
-                  style={{ flexShrink:0,padding:'5px 12px',borderRadius:20,border:'none',cursor:'pointer',fontFamily:'Raleway,sans-serif',fontSize:11,fontWeight:700,
+                  style={{ flexShrink:0,padding:'5px 12px',borderRadius:20,cursor:'pointer',fontFamily:'Raleway,sans-serif',fontSize:11,fontWeight:700,
                     background:catId===c.id?'rgba(201,169,110,.15)':'rgba(30,26,20,.9)',
                     border:`1px solid ${catId===c.id?'rgba(201,169,110,.45)':'rgba(61,53,40,.8)'}`,
                     color:catId===c.id?'#E8C98A':'#B8A898' }}>

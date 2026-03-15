@@ -1,3 +1,4 @@
+import React from 'react'
 // Fichier : components/LiveCameraSimulation.tsx
 // getUserMedia + Three.js overlay aligné pixel-perfect sur la vidéo
 'use client'
@@ -167,9 +168,11 @@ function RoomScene({
 
       {/* ── Objets placés ── */}
       {placed.map(item => (
-        <PlacedMesh key={item.id} item={item} room={room}
-          selected={item.id === selectedId}
-          onClick={() => onObjSelect(item.id)} />
+        <React.Fragment key={item.id}>
+          <PlacedMesh item={item} room={room}
+            selected={item.id === selectedId}
+            onClick={() => onObjSelect(item.id)} />
+        </React.Fragment>
       ))}
     </>
   )
