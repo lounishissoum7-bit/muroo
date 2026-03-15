@@ -94,6 +94,14 @@ interface MuroStore {
   selectedProduct: Product | null
   setSelectedProduct: (p: Product | null) => void
 
+  // ── Mesures intelligentes ────────────────────────────
+  lastRoom:       { longueur: number; largeur: number; hauteur: number; name: string; icon: string } | null
+  setLastRoom:    (r: { longueur: number; largeur: number; hauteur: number; name: string; icon: string }) => void
+
+  // ── Deep-link Boutique → Simulation ────────────────
+  pendingProductId: string | null
+  setPendingProductId: (id: string | null) => void
+
   // ── UI ─────────────────────────────────────────────
   isARMode:    boolean
   setARMode:   (v: boolean) => void
@@ -195,8 +203,8 @@ export const useMuroStore = create<MuroStore>()(
         clearCart: () => set({ cart: [] }),
 
         // ── Simulation ────────────────────────────────
-        placedObjects:   [],
-        selectedProduct: null,
+        placedObjects:    [],
+        selectedProduct:  null,
 
         placeObject: (o) => set(s => ({
           placedObjects: [...s.placedObjects, { ...o, id: nanoid() }],
@@ -209,6 +217,14 @@ export const useMuroStore = create<MuroStore>()(
         clearObjects: () => set({ placedObjects: [] }),
 
         setSelectedProduct: (p) => set({ selectedProduct: p }),
+
+        // ── Mesures intelligentes ─────────────────────────
+        lastRoom: null,
+        setLastRoom: (r) => set({ lastRoom: r }),
+
+        // ── Deep-link ─────────────────────────────────
+        pendingProductId:    null,
+        setPendingProductId: (id) => set({ pendingProductId: id }),
 
         // ── UI ────────────────────────────────────────
         isARMode: false,
