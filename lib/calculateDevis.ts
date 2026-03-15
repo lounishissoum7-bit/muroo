@@ -132,3 +132,87 @@ export async function exportCanvasAsImage(canvasEl: HTMLCanvasElement | null) {
   a.href = canvasEl.toDataURL('image/png', 1.0)
   a.click()
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// useDevis — hook React qui construit le devis depuis le store Zustand
+// (utilisé par DevisPDF.tsx et app/devis/page.tsx)
+// ═══════════════════════════════════════════════════════════════════
+import { useMuroStore, useCartTotal } from './store'
+
+export interface DevisUI {
+  lines:       Array<{
+    label:    string
+    qty:      string
+    unitPrice:string
+    total:    string
+    emoji:    string
+  }>
+  roomName:    string
+  surfaceM2:   number
+  perimeterM:  number
+  wallAreaM2:  number
+  subtotalDA:  number
+  tvaDA:       number
+  totalDA:     number
+  date:        string
+  summary:     string   // message pré-formaté pour WhatsApp
+}
+
+export function useDevis(): DevisUI {
+  const cart         = useMuroStore(s => s.cart)
+  const rooms        = useMuroStore(s => s.rooms)
+  const activeRoomId = useMuroStore(s => s.activeRoomId)
+  const lastRoom     = useMuroStore(s => s.lastRoom)
+  const { subtotal, tva, total } = useCartTotal()
+
+  const activeRoom = rooms.find(r => r.id === activeRoomId) ?? null
+
+  // Nom de la pièce — priorité : room active > lastRoom > défaut
+  const roomName = activeRoom?.name ?? lastRoom?.name ?? 'Salon'
+
+  // Dimensions depuis lastRoom ou room active
+  const longueur = lastRoom?.longueur ?? 4
+  const largeur  = lastRoom?.largeur  ?? 3.5
+  const hauteur  = lastRoom?.hauteur  ?? 2.6
+
+  const surfaceM2  = +(longueur * largeur).toFixed(2)
+  const perimeterM = +(2 * (longueur + largeur)).toFixed(2)
+  const wallAreaM2 = +(2 * (longueur + largeur) * hauteur).toFixed(2)
+
+  const lines = cart.map(item => ({
+    label:     item.product.name,
+    emoji:     item.product.emoji,
+    qty:       `${item.quantity} ${item.product.priceUnit}`,
+    unitPrice: fmtDA(item.product.priceDA),
+    total:     fmtDA(item.totalDA),
+  }))
+
+  const date = new Date().toLocaleDateString('fr-DZ', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  })
+
+  // Message résumé WhatsApp
+  const linesText = lines.map(l => `• ${l.emoji} ${l.label} × ${l.qty} → ${l.total}`).join('\n')
+  const summary = `Bonjour MURO by L&Y 👋\n\nDevis du ${date}\nPièce : ${roomName} (${longueur}×${largeur}×${hauteur}m)\n\n${linesText}\n\nSous-total HT : ${fmtDA(subtotal)}\nTVA 19% : ${fmtDA(tva)}\nTOTAL TTC : ${fmtDA(total)}\n\nMerci de confirmer disponibilité et délais — Oran.`
+
+  return {
+    lines,
+    roomName,
+    surfaceM2,
+    perimeterM,
+    wallAreaM2,
+    subtotalDA:  subtotal,
+    tvaDA:       tva,
+    totalDA:     total,
+    date,
+    summary,
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// sendDevisWhatsApp — ouvre WhatsApp avec le message devis complet
+// ═══════════════════════════════════════════════════════════════════
+export function sendDevisWhatsApp(message: string, phone: string) {
+  const encoded = encodeURIComponent(message)
+  window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank')
+}
