@@ -54,13 +54,15 @@ function today(): string {
 
 // Catégorie → label français
 const CAT_LABEL: Record<string, string> = {
-  'tv-simple': 'Meubles TV',
-  'tv-deco':   'TV + Placo Déco',
-  'tv':        'Meubles TV',
-  'murs':      'Revêtements Muraux',
-  'lumiere':   'Éclairage',
-  'mobilier':  'Mobilier',
-  'services':  'Services & Pose',
+  'tv-simple':    'Meubles TV',
+  'tv-deco':      'TV + Placo Déco',
+  'tv':           'Meubles TV',
+  'porte-wpc':    'Portes Invisibles WPC',
+  'faux-shiplap': 'Faux Shiplap & Lamelles',
+  'murs':         'Revêtements Muraux',
+  'lumiere':       'Éclairage',
+  'mobilier':      'Mobilier',
+  'services':      'Services & Pose',
 }
 
 // ══════════════════════════════════════════════════════════════════

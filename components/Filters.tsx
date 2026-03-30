@@ -4,13 +4,15 @@
 import { motion } from 'framer-motion'
 
 export const FILTER_DEFS = [
-  { id: 'all',       label: 'Tout',        emoji: '✨', count: null },
-  { id: 'tv-simple', label: 'Meubles TV',  emoji: '📺', count: null },
-  { id: 'tv-deco',   label: 'TV + Placo',  emoji: '🏛️', count: null },
-  { id: 'murs',      label: 'Revêtements', emoji: '🪨', count: null },
-  { id: 'lumiere',   label: 'Éclairage',   emoji: '💡', count: null },
-  { id: 'mobilier',  label: 'Mobilier',    emoji: '🛋️', count: null },
-  { id: 'services',  label: 'Services',    emoji: '🔧', count: null },
+  { id: 'all',          label: 'Tout',              emoji: '✨', count: null },
+  { id: 'porte-wpc',    label: 'Portes Invisibles', emoji: '🚪', count: null },
+  { id: 'faux-shiplap', label: 'Faux Shiplap',      emoji: '🪵', count: null },
+  { id: 'tv-simple',    label: 'Meubles TV',        emoji: '📺', count: null },
+  { id: 'tv-deco',      label: 'TV + Placo',        emoji: '🏛️', count: null },
+  { id: 'murs',         label: 'Revêtements',       emoji: '🪨', count: null },
+  { id: 'lumiere',      label: 'Éclairage',         emoji: '💡', count: null },
+  { id: 'mobilier',     label: 'Mobilier',          emoji: '🛋️', count: null },
+  { id: 'services',     label: 'Services',          emoji: '🔧', count: null },
 ] as const
 
 export type FilterId = typeof FILTER_DEFS[number]['id']

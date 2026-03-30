@@ -12,15 +12,19 @@ import type { Product } from '@/lib/store'
 
 // ── Produits réels depuis le catalogue ──────────────────────────
 const BS_IDS = [
+  'porte-secrete-shiplap-gris',
+  'faux-shiplap-bois-lamelles',
+  'led-rgb-acoustique-tv',
   'tv-simple-bois-noir',
-  'faux-marbre-blanc',
-  'tv-deco-mural-anthracite',
-  'tv-simple-flottant-beige',
 ]
 const BESTSELLERS = BS_IDS.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean) as Product[]
 
 // ── Badge config ─────────────────────────────────────────────────
 const BADGE_STYLE: Record<string, { bg: string; color: string; label: string }> = {
+  'porte-secrete-shiplap-gris': { bg: 'linear-gradient(135deg,#1C1C2E,#4A4A6A)', color: '#E8C98A', label: '👁 Service Discret' },
+  'porte-wpc-noyer':            { bg: 'linear-gradient(135deg,#9A7840,#D4AF77)', color: '#0D0B08', label: '✦ Nouveau' },
+  'faux-shiplap-bois-lamelles': { bg: 'rgba(139,92,246,0.15)',                  color: '#A78BFA', label: '✦ Nouveau' },
+  'led-rgb-acoustique-tv':      { bg: 'rgba(255,64,129,0.15)',                  color: '#FF4081', label: '🎵 LED Acoustique' },
   'tv-simple-bois-noir':      { bg: 'linear-gradient(135deg,#9A7840,#D4AF77)', color: '#0D0B08',  label: 'Best Seller' },
   'faux-marbre-blanc':        { bg: 'rgba(64,196,255,0.15)',                   color: '#40C4FF',  label: 'Tendance' },
   'tv-deco-mural-anthracite': { bg: 'rgba(139,92,246,0.15)',                   color: '#A78BFA',  label: 'Clé en main' },
@@ -268,10 +272,11 @@ export default function BoutiqueTeaser() {
           transition={{ delay: 0.1, duration: 0.5 }}
           style={{ display: 'flex', gap: 7, marginBottom: 20, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
           {[
-            { id: 'tv-simple', label: '📺 Meubles TV' },
-            { id: 'murs',      label: '🪨 Revêtements' },
-            { id: 'tv-deco',   label: '🏛️ TV + Placo' },
-            { id: 'lumiere',   label: '💡 Éclairage' },
+            { id: 'porte-wpc',    label: '🚪 Portes Invisibles' },
+            { id: 'faux-shiplap', label: '🪵 Faux Shiplap' },
+            { id: 'tv-simple',    label: '📺 Meubles TV' },
+            { id: 'tv-deco',      label: '🏛️ TV + Placo' },
+            { id: 'murs',         label: '🪨 Revêtements' },
           ].map(cat => (
             <button key={cat.id} onClick={() => goToBoutique(cat.id)}
               style={{ flexShrink: 0, padding: '6px 14px', borderRadius: 20,
