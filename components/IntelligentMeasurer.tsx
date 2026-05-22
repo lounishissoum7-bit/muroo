@@ -98,35 +98,79 @@ function useGyro() {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// HOOK CAMÉRA (getUserMedia — 1 seule permission)
+// HOOK CAMÉRA — FIX ANDROID/iOS 2026
+// Ordre critique : setCamState('active') AVANT srcObject
+// → React rend le <video> → useEffect attache le stream
 // ══════════════════════════════════════════════════════════════════
 function useCamera() {
-  const videoRef  = useRef<HTMLVideoElement>(null)
-  const streamRef = useRef<MediaStream|null>(null)
-  const [camState, setCamState] = useState<CamState>('idle')
-  const [videoSize, setVideoSize] = useState({ w:1280, h:720 })
+  const videoRef     = useRef<HTMLVideoElement>(null)
+  const streamRef    = useRef<MediaStream|null>(null)
+  const pendingRef   = useRef<MediaStream|null>(null)  // stream en attente du render
+  const [camState,   setCamState]  = useState<CamState>('idle')
+  const [videoSize,  setVideoSize] = useState({ w:1280, h:720 })
+
+  // Exécuté après chaque render — attache le stream dès que <video> est dans le DOM
+  useEffect(() => {
+    if (!pendingRef.current) return
+    const vid = videoRef.current
+    if (!vid) return
+    const stream = pendingRef.current
+    pendingRef.current = null
+    vid.srcObject = stream
+    vid.muted     = true
+    vid.play().catch(() => {
+      // Android/iOS : réessayer au premier geste utilisateur
+      document.addEventListener('touchstart', () => vid.play().catch(() => {}), { once: true })
+      document.addEventListener('click',      () => vid.play().catch(() => {}), { once: true })
+    })
+  }) // sans deps → s'exécute après chaque render
 
   const start = useCallback(async () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop())
+      streamRef.current = null
+    }
+    if (videoRef.current) videoRef.current.srcObject = null
     setCamState('requesting')
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal:'environment' }, frameRate:{ max:30 }, width:{ ideal:1280 }, height:{ ideal:720 } },
-        audio: false,
-      })
+      let stream: MediaStream | null = null
+      // Essai 1 : caméra arrière HD
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode:{ ideal:'environment' }, frameRate:{ max:30 }, width:{ ideal:1280 }, height:{ ideal:720 } },
+          audio: false,
+        })
+      } catch {
+        // Essai 2 : caméra arrière simple
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode:'environment' }, audio: false,
+          })
+        } catch {
+          // Essai 3 : n'importe quelle caméra
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        }
+      }
       streamRef.current = stream
-      const track    = stream.getVideoTracks()[0]
-      const settings = track.getSettings()
-      if (settings.width && settings.height) setVideoSize({ w:settings.width, h:settings.height })
-      if (videoRef.current) { videoRef.current.srcObject = stream; await videoRef.current.play() }
+      const track = stream.getVideoTracks()[0]
+      if (track) {
+        const s = track.getSettings()
+        if (s.width && s.height) setVideoSize({ w: s.width, h: s.height })
+      }
+      // ⚠️ active EN PREMIER → React re-render → <video> monté → useEffect attache
+      pendingRef.current = stream
       setCamState('active')
-    } catch(e:any) {
-      setCamState(e?.name==='NotFoundError' ? 'unavailable' : 'denied')
+    } catch(e: unknown) {
+      const n = (e as any)?.name ?? ''
+      setCamState(n === 'NotFoundError' || n === 'DevicesNotFoundError' ? 'unavailable' : 'denied')
     }
   }, [])
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop())
+    pendingRef.current = null
     if (videoRef.current) videoRef.current.srcObject = null
+    streamRef.current = null
     setCamState('idle')
   }, [])
 
@@ -711,10 +755,11 @@ export default function IntelligentMeasurer({ onDone }: Props) {
             {step >= 1 && step <= 4 && !result && (
               <div ref={containerRef} style={{ flex:1,position:'relative',minHeight:300 }}>
                 {/* Vidéo fond */}
-                {cam.camState === 'active' ? (
-                  <video ref={cam.videoRef} autoPlay playsInline muted
-                    style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover' }}/>
-                ) : (
+                {/* VIDEO toujours dans le DOM pour que videoRef.current existe */}
+                <video ref={cam.videoRef} autoPlay playsInline muted
+                  style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',
+                    display: cam.camState === 'active' ? 'block' : 'none' }}/>
+                {cam.camState !== 'active' && (
                   <div style={{ position:'absolute',inset:0,background:'linear-gradient(160deg,#0D0B08,#141008)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12 }}>
                     {cam.camState === 'requesting' && <>
                       <div style={{ fontSize:36 }}>📷</div>

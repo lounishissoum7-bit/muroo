@@ -14,71 +14,112 @@ import type { PlacedItem } from './ProductPlacer'
 import type { Product } from '@/lib/store'
 
 // ══════════════════════════════════════════════════════════════════
-// HOOK — getUserMedia robuste (retry + iOS Safari compatible)
+// HOOK useCamera — FIX ANDROID/iOS 2026
+// Bug corrigé : la <video> doit être dans le DOM AVANT d'assigner srcObject
+// Solution : setCamState('active') en premier → React re-render → vidéo montée
+//            → attachStream() attache srcObject dans un setTimeout(0)
 // ══════════════════════════════════════════════════════════════════
 type CamState = 'idle' | 'requesting' | 'active' | 'denied' | 'unavailable'
 
 function useCamera() {
-  const videoRef  = useRef<HTMLVideoElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
-  const [state,   setCamState] = useState<CamState>('idle')
-  const [aspect,  setAspect]   = useState(16 / 9)
+  const videoRef    = useRef<HTMLVideoElement>(null)
+  const streamRef   = useRef<MediaStream | null>(null)
+  const pendingRef  = useRef<MediaStream | null>(null)  // stream en attente de la vidéo
+  const [state, setCamState] = useState<CamState>('idle')
+  const [aspect, setAspect]  = useState(16 / 9)
+
+  // Appelé après chaque render pour attacher le stream en attente
+  useEffect(() => {
+    if (!pendingRef.current) return
+    const vid = videoRef.current
+    if (!vid) return
+    const stream = pendingRef.current
+    pendingRef.current = null
+    vid.srcObject  = stream
+    vid.muted      = true
+    // play() — gestion des politiques autoplay Android/iOS
+    const tryPlay = () => {
+      vid.play().catch(() => {
+        // Si bloqué par politique autoplay, réessayer au prochain toucher
+        document.addEventListener('touchstart', () => vid.play().catch(() => {}), { once: true })
+        document.addEventListener('click',      () => vid.play().catch(() => {}), { once: true })
+      })
+    }
+    tryPlay()
+  })  // ← sans dépendances : s'exécute après CHAQUE render
 
   const start = useCallback(async () => {
-    // Arrêter le stream précédent si existant
+    // Arrêter stream précédent
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop())
       streamRef.current = null
-      if (videoRef.current) videoRef.current.srcObject = null
     }
+    if (videoRef.current) videoRef.current.srcObject = null
 
     setCamState('requesting')
+
     try {
-      // Essai 1 : caméra arrière idéale
       let stream: MediaStream | null = null
+
+      // Tentative 1 — caméra arrière (environment) HD
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' }, frameRate: { max: 30 }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          video: {
+            facingMode: { ideal: 'environment' },
+            width:      { ideal: 1280 },
+            height:     { ideal: 720 },
+            frameRate:  { ideal: 30, max: 30 },
+          },
           audio: false,
         })
       } catch {
-        // Essai 2 : toute caméra disponible (fallback)
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        // Tentative 2 — caméra arrière sans contraintes HD
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' },
+            audio: false,
+          })
+        } catch {
+          // Tentative 3 — n'importe quelle caméra (fallback absolu)
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        }
       }
 
       streamRef.current = stream
-      const track    = stream.getVideoTracks()[0]
-      const settings = track.getSettings()
-      if (settings.width && settings.height) setAspect(settings.width / settings.height)
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        videoRef.current.setAttribute('playsinline', 'true')
-        videoRef.current.setAttribute('autoplay', 'true')
-        videoRef.current.muted = true
-        // Sur iOS Safari il faut appeler play() après un geste utilisateur
-        try { await videoRef.current.play() } catch { /* iOS autoplay policy */ }
+      const track = stream.getVideoTracks()[0]
+      if (track) {
+        const s = track.getSettings()
+        if (s.width && s.height) setAspect(s.width / s.height)
       }
+
+      // ⚠️ ORDRE CRITIQUE : setCamState('active') EN PREMIER
+      // → React re-rend le composant → <video> apparaît dans le DOM
+      // → useEffect (ci-dessus) attache le stream via pendingRef
+      pendingRef.current = stream
       setCamState('active')
-    } catch (err: any) {
-      const name = err?.name ?? ''
+
+    } catch (err: unknown) {
+      const name = (err as any)?.name ?? ''
       if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
         setCamState('unavailable')
       } else {
-        // NotAllowedError, PermissionDeniedError, etc.
+        // NotAllowedError, PermissionDeniedError, SecurityError
         setCamState('denied')
       }
     }
-  }, [])   // ← pas de dépendance sur state → peut être appelé à tout moment
+  }, [])
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop())
+    pendingRef.current = null
     if (videoRef.current) videoRef.current.srcObject = null
     streamRef.current = null
     setCamState('idle')
   }, [])
 
-  useEffect(() => () => { streamRef.current?.getTracks().forEach(t => t.stop()) }, [])
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach(t => t.stop())
+  }, [])
 
   return { videoRef, state, aspect, start, stop }
 }
@@ -467,13 +508,28 @@ export default function LiveCameraSimulation({
       {/* ── ZONE VIDÉO + CANVAS 3D ──────────────────────────── */}
       <div style={{ flex:1,position:'relative',overflow:'hidden',minHeight:0 }}>
 
-        {/* FOND : vidéo caméra OU photo overlay */}
-        {photoUrl ? (
-          <img src={photoUrl} alt="overlay" style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover' }} />
-        ) : cam.state === 'active' ? (
-          <video ref={cam.videoRef} autoPlay playsInline muted
-            style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover' }} />
-        ) : (
+        {/* FOND photo overlay */}
+        {photoUrl && (
+          <img src={photoUrl} alt="overlay"
+            style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',zIndex:2 }} />
+        )}
+
+        {/* ⚠️ VIDEO TOUJOURS DANS LE DOM — display:none si inactif
+            CRUCIAL : videoRef.current doit exister AVANT qu'on fasse srcObject = stream */}
+        <video
+          ref={cam.videoRef}
+          autoPlay playsInline muted
+          style={{
+            position:'absolute', inset:0, width:'100%', height:'100%',
+            objectFit:'cover', zIndex:1,
+            opacity:   cam.state === 'active' && !photoUrl ? 1 : 0,
+            display:   'block',
+            pointerEvents: cam.state === 'active' ? 'none' : 'none',
+          }}
+        />
+
+        {/* Fallback fond + messages état — masqué quand caméra active */}
+        {(cam.state !== 'active' || photoUrl) && (
           <div style={{ position:'absolute',inset:0,background:'linear-gradient(160deg,#0D0B08,#141008)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16 }}>
             {cam.state === 'requesting' && (
               <>
@@ -484,8 +540,11 @@ export default function LiveCameraSimulation({
             {cam.state === 'denied' && (
               <>
                 <div style={{ fontSize:40 }}>🚫</div>
-                <div style={{ fontSize:13,fontWeight:700,color:'#FF5252',textAlign:'center',padding:'0 30px' }}>Permission caméra refusée</div>
-                <div style={{ fontSize:11,color:'#7A6E60',textAlign:'center',padding:'0 40px' }}>La simulation 3D fonctionne quand même — la caméra est optionnelle</div>
+                <div style={{ fontSize:13,fontWeight:700,color:'#FF5252',textAlign:'center',padding:'0 20px' }}>Permission caméra refusée</div>
+                <div style={{ fontSize:11,color:'#7A6E60',textAlign:'center',padding:'0 20px',lineHeight:1.6,marginTop:4 }}>
+                  Android : Paramètres → Chrome → Autorisations → Caméra ✓<br/>
+                  iOS : Réglages → Safari → Caméra → Autoriser
+                </div>
               </>
             )}
             {cam.state === 'unavailable' && (
@@ -494,9 +553,24 @@ export default function LiveCameraSimulation({
                 <div style={{ fontSize:13,fontWeight:700,color:'#FF5252' }}>Aucune caméra détectée</div>
               </>
             )}
-            {(cam.state === 'idle' || cam.state === 'denied' || cam.state === 'unavailable') && (
-              <button onClick={cam.start} style={{ padding:'12px 24px',borderRadius:14,border:'none',cursor:'pointer',background:'linear-gradient(135deg,#9A7840,#C9A96E)',color:'#0D0B08',fontSize:13,fontWeight:800,fontFamily:'Raleway,sans-serif',display:'flex',alignItems:'center',gap:8 }}>
-                📷 Activer la caméra
+            {(cam.state === 'idle') && (
+              <button onClick={cam.start}
+                style={{ padding:'16px 32px',borderRadius:16,border:'none',cursor:'pointer',
+                  background:'linear-gradient(135deg,#9A7840,#C9A96E)',color:'#0D0B08',
+                  fontSize:14,fontWeight:800,fontFamily:'Raleway,sans-serif',
+                  display:'flex',alignItems:'center',gap:10,
+                  boxShadow:'0 8px 32px rgba(201,169,110,0.4)' }}>
+                <span style={{fontSize:24}}>📷</span> Activer la caméra
+              </button>
+            )}
+          {(cam.state === 'denied' || cam.state === 'unavailable') && (
+              <button onClick={cam.start}
+                style={{ padding:'14px 28px',borderRadius:14,cursor:'pointer',
+                  background:'rgba(201,169,110,0.15)',color:'#C9A96E',
+                  fontSize:13,fontWeight:800,fontFamily:'Raleway,sans-serif',
+                  border:'1.5px solid rgba(201,169,110,0.4)',
+                  display:'flex',alignItems:'center',gap:8 }}>
+                <span style={{fontSize:20}}>🔄</span> Réessayer la caméra
               </button>
             )}
           </div>

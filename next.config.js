@@ -6,12 +6,14 @@ const nextConfig = {
       {
         source: '/(.*)',
         headers: [
-          { key: 'Cross-Origin-Opener-Policy',  value: 'same-origin' },
-          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
-          { key: 'Service-Worker-Allowed',       value: '/' },
+          // ⚠️ Cross-Origin-Embedder-Policy SUPPRIMÉ — bloquait getUserMedia sur Android Chrome
+          // Cross-Origin-Opener-Policy en mode permissif pour compatibilité caméra
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+          { key: 'Service-Worker-Allowed',     value: '/' },
           {
             key: 'Permissions-Policy',
-            value: 'camera=*, xr-spatial-tracking=*, gyroscope=*, accelerometer=*',
+            // Syntaxe correcte 2026 : autoriser caméra explicitement
+            value: 'camera=*, microphone=(), geolocation=()',
           },
         ],
       },
